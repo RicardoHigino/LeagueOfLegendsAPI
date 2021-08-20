@@ -9,8 +9,54 @@ const app = express()
 app.use(cors())
 app.use(json())
 
-app.listen(3000, () => {
-    console.log('SERVER ON')
+app.listen(3333, () => {
+    console.log('server running on port 3000')
+})
+
+app.get('/summoner/:summonerName', async(req, res) => {
+    const { summonerName } = req.params
+
+    const summonerIdResponse = await axios.get(`${process.env.LOL_URL}/lol/summoner/v4/summoners/by-name/${summonerName}`, 
+    {headers: { 'X-Riot-Token': process.env.LOL_KEY}}
+    ).then((resposta) => {
+        return resposta
+    }).catch((e) => {
+        res.send(res.json(e.response.data.status))
+    })
+
+    const { id, profileIconId, summonerLevel} = summonerIdResponse.data
+
+    return res.json({
+        id,
+        summonerName,
+        summonerLevel
+    })
+})
+
+app.get('/summoner/champion-mastery/:summonerID', async(req, res) => {
+    const { summonerName } = req.params
+
+    const summonerIdResponse = await axios.get(`${process.env.LOL_URL}/lol/summoner/v4/summoners/by-name/${summonerName}`, 
+    {headers: { 'X-Riot-Token': process.env.LOL_KEY}}
+    ).then((resposta) => {
+        return resposta
+    }).catch((e) => {
+        res.send(res.json(e.response.data.status))
+    })
+
+    const { id } = summonerIdResponse.data
+
+    const championMastery = await axios.get(`${process.env.LOL_URL}/lol/champion-mastery/v4/champion-masteries/by-summoner/${id}`,
+    {headers: { 'X-Riot-Token': process.env.LOL_KEY}}
+    ).then((resposta) => {
+        return resposta
+    }).catch((e) => {
+        res.send(res.json(e.response.data.status))
+    })
+
+    const data = championMastery.data
+
+    return res.send(data)
 })
 
 app.get('/summoner/ranked/:summonerName', async(req, res) => {
@@ -24,10 +70,10 @@ app.get('/summoner/ranked/:summonerName', async(req, res) => {
         res.send(res.json(e.response.data.status))
     })
 
-    // Dados dos jogadores
+    // Summoner data
     const { id, profileIconId, summonerLevel} = summonerIdResponse.data
 
-    const responseRanked = await axios.get(`${process.env.LOL_URL}/lol/league/v4/entries/by-summoner/$${id}`,
+    const responseRanked = await axios.get(`${process.env.LOL_URL}/lol/league/v4/entries/by-summoner/${id}`,
     {headers: { 'X-Riot-Token': process.env.LOL_KEY}})
     .then((resposta) => {
         return resposta
@@ -35,12 +81,13 @@ app.get('/summoner/ranked/:summonerName', async(req, res) => {
         res.send(res.json(e.response.data.status))
     })
 
-    // Dados da Ranked
+    // Ranked data
     const { tier, rank, wins, losses, queueType } = responseRanked.data[1]
     ? responseRanked.data[1] : responseRanked.data[0]
 
-    // Dados completos
+    // Complete card Ranked
     return res.json({
+        summonerName,
         summonerLevel,
         tier,
         rank,
