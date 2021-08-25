@@ -29,7 +29,8 @@ app.get('/summoner/:summonerName', async(req, res) => {
     return res.json({
         id,
         summonerName,
-        summonerLevel
+        summonerLevel,
+        profileIconId
     })
 })
 
@@ -118,3 +119,28 @@ app.get('/summoner/ranked/:rankedName/:summonerName', async(req, res) => {
         })
     }
 }) 
+
+app.get('/summoner/spectator/:summonerName', async(req, res) => {
+    const { summonerName } = req.params
+
+    const summonerIdResponse = await axios.get(`${process.env.LOL_URL}/lol/summoner/v4/summoners/by-name/${summonerName}`, 
+    {headers: { 'X-Riot-Token': process.env.LOL_KEY}}
+    ).then((resposta) => {
+        return resposta
+    }).catch((e) => {
+        res.send(res.json(e.response.data.status))
+    })
+
+    const {id} = summonerIdResponse.data
+
+    const championMastery = await axios.get(`${process.env.LOL_URL}/lol/spectator/v4/active-games/by-summoner/${id}`,
+    {headers: { 'X-Riot-Token': process.env.LOL_KEY}}
+    ).then((resposta) => {
+        return resposta
+    }).catch((e) => {
+        res.send(res.json(e.response.data.status))
+    })
+
+    const data = championMastery.data
+    return res.send(data)
+})
