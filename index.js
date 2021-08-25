@@ -59,7 +59,8 @@ app.get('/summoner/champion-mastery/:summonerID', async(req, res) => {
     return res.send(data)
 })
 
-app.get('/summoner/ranked/solo/:summonerName', async(req, res) => {
+app.get('/summoner/ranked/:rankedName/:summonerName', async(req, res) => {
+    const { rankedName } = req.params
     const { summonerName } = req.params
     
     const summonerIdResponse = await axios.get(`${process.env.LOL_URL}/lol/summoner/v4/summoners/by-name/${summonerName}`, 
@@ -81,58 +82,39 @@ app.get('/summoner/ranked/solo/:summonerName', async(req, res) => {
         res.send(res.json(e.response.data.status))
     })
 
-    // Ranked data
-    const { tier, rank, wins, losses, queueType } = responseRanked.data[1]
-
-    // Complete card Ranked
-    return res.json({
-        summonerName,
-        summonerLevel,
-        tier,
-        rank,
-        wins,
-        losses,
-        queueType,
-        iconUrl: `${process.env.LOL_ICONS}/${profileIconId}.png`,
-        winRate: ((wins / (wins + losses)) * 100).toFixed(1)
-    })
-}) 
-
-app.get('/summoner/ranked/flex/:summonerName', async(req, res) => {
-    const { summonerName } = req.params
+    if (rankedName === "solo") {
+        // Ranked data
+        const { tier, rank, wins, losses, queueType } = responseRanked.data[0]
     
-    const summonerIdResponse = await axios.get(`${process.env.LOL_URL}/lol/summoner/v4/summoners/by-name/${summonerName}`, 
-    {headers: { 'X-Riot-Token': process.env.LOL_KEY}}
-    ).then((resposta) => {
-        return resposta
-    }).catch((e) => {
-        res.send(res.json(e.response.data.status))
-    })
+        // Complete card Ranked
+        return res.json({
+            summonerName,
+            summonerLevel,
+            tier,
+            rank,
+            wins,
+            losses,
+            queueType,
+            iconUrl: `${process.env.LOL_ICONS}/${profileIconId}.png`,
+            winRate: ((wins / (wins + losses)) * 100).toFixed(1)
+        })
+    }
 
-    // Summoner data
-    const { id, profileIconId, summonerLevel} = summonerIdResponse.data
-
-    const responseRanked = await axios.get(`${process.env.LOL_URL}/lol/league/v4/entries/by-summoner/${id}`,
-    {headers: { 'X-Riot-Token': process.env.LOL_KEY}})
-    .then((resposta) => {
-        return resposta
-    }).catch((e) => {
-        res.send(res.json(e.response.data.status))
-    })
-
-    // Ranked data
-    const { tier, rank, wins, losses, queueType } = responseRanked.data[0]
-
-    // Complete card Ranked
-    return res.json({
-        summonerName,
-        summonerLevel,
-        tier,
-        rank,
-        wins,
-        losses,
-        queueType,
-        iconUrl: `${process.env.LOL_ICONS}/${profileIconId}.png`,
-        winRate: ((wins / (wins + losses)) * 100).toFixed(1)
-    })
+    if (rankedName === "flex") {
+        // Ranked data
+        const { tier, rank, wins, losses, queueType } = responseRanked.data[1]
+    
+        // Complete card Ranked
+        return res.json({
+            summonerName,
+            summonerLevel,
+            tier,
+            rank,
+            wins,
+            losses,
+            queueType,
+            iconUrl: `${process.env.LOL_ICONS}/${profileIconId}.png`,
+            winRate: ((wins / (wins + losses)) * 100).toFixed(1)
+        })
+    }
 }) 
