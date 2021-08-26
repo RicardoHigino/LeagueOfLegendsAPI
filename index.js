@@ -10,7 +10,7 @@ app.use(cors())
 app.use(json())
 
 app.listen(3333, () => {
-    console.log('server running on port 3000')
+    console.log('server running on port 3333')
 })
 
 app.get('/summoner/:summonerName', async(req, res) => {
@@ -84,39 +84,47 @@ app.get('/summoner/ranked/:rankedName/:summonerName', async(req, res) => {
     })
 
     if (rankedName === "solo") {
-        // Ranked data
-        const { tier, rank, wins, losses, queueType } = responseRanked.data[0]
-    
-        // Complete card Ranked
-        return res.json({
-            summonerName,
-            summonerLevel,
-            tier,
-            rank,
-            wins,
-            losses,
-            queueType,
-            iconUrl: `${process.env.LOL_ICONS}/${profileIconId}.png`,
-            winRate: ((wins / (wins + losses)) * 100).toFixed(1)
-        })
+        try{
+            // Ranked data
+            const { tier, rank, wins, losses, queueType } = responseRanked.data[0]
+        
+            // Complete card Ranked
+            return res.json({
+                summonerName,
+                summonerLevel,
+                tier,
+                rank,
+                wins,
+                losses,
+                queueType,
+                iconUrl: `${process.env.LOL_ICONS}/${profileIconId}.png`,
+                winRate: ((wins / (wins + losses)) * 100).toFixed(1)
+            })
+        } catch(e) {
+            res.json('Data not found.')
+        }
     }
 
     if (rankedName === "flex") {
-        // Ranked data
-        const { tier, rank, wins, losses, queueType } = responseRanked.data[1]
-    
-        // Complete card Ranked
-        return res.json({
-            summonerName,
-            summonerLevel,
-            tier,
-            rank,
-            wins,
-            losses,
-            queueType,
-            iconUrl: `${process.env.LOL_ICONS}/${profileIconId}.png`,
-            winRate: ((wins / (wins + losses)) * 100).toFixed(1)
-        })
+        try {
+            // Ranked data
+            const { tier, rank, wins, losses, queueType } = responseRanked.data[1]
+        
+            // Complete card Ranked
+            return res.json({
+                summonerName,
+                summonerLevel,
+                tier,
+                rank,
+                wins,
+                losses,
+                queueType,
+                iconUrl: `${process.env.LOL_ICONS}/${profileIconId}.png`,
+                winRate: ((wins / (wins + losses)) * 100).toFixed(1)
+            })
+        } catch(e) {
+            res.json('Data not found.')
+        }
     }
 }) 
 
